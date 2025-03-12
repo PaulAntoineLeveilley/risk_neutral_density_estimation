@@ -1,0 +1,25 @@
+# Fichiers Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environnements virtuels
+venv/
+.env/
+
+# Logs et outputs
+*.log
+*.csv
+*.npy
+*.h5
+
+# Fichiers spécifiques à l'IDE
+.vscode/
+.idea/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# MacOS
+.DS_Store
