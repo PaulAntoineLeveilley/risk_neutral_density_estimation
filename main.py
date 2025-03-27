@@ -4,6 +4,7 @@ from pricing.bakshi_pricing import bakshi_prices, rnd_bakshi
 from models.black_scholes import monte_carlo_simulations_bs
 from models.heston import monte_carlo_simulations_heston
 from models.bakshi import monte_carlo_simulations_bakshi
+from implied_vol.implied_vol import implied_vol
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,13 +12,15 @@ from scipy.integrate import quad
 
 
 def main():
-    S = 100
+    Smin = 30
+    Smax = 180
+    n = 100
+    S = [Smin + (Smax-Smin)*i/n for i in range(n+1)]
     V = 0.2
     K = 100
     T = 1
     r = 0.05
-    delta = 0
-    sigma = 0.2
+    sigma = 0.20
     kappa = 1
     theta = 0.2
     lambd = 0  # market price of vol
@@ -27,27 +30,44 @@ def main():
     rho = 0.1
     upper_bound = 1000
 
-    xmax = 500
-    X = np.linspace(1, xmax, xmax)
+    error = 0.01
+    maxiter = 50
 
-    def rndh(x): return rnd_heston(S, V, T, r, kappa,
-                                   theta, lambd, rho, sigma, upper_bound, x)
+    bs_iv = []
+    h_iv = []
+    ba_iv = []
 
-    def rndb(x): return rnd_bakshi(S, V, T, r, kappa, theta,
-                                   lambdajump, rho, sigma, muj, sigmaj, upper_bound, x)
+    bs_prices = []
+    h_prices = []
+    ba_prices = []
 
-    def rndbs(x): return rnd_bs(S, T, r, sigma, delta, x)
-    Y = np.zeros((xmax))
-    Z = np.zeros((xmax))
-    A = np.zeros((xmax))
-    for i in range(1, xmax+1):
-        Y[i-1] = rndh(i)
-        Z[i-1] = rndbs(i)
-        A[i-1] = rndb(i)
-    plt.plot(X, Y, label='heston')
-    plt.plot(X, Z, label="bs")
-    plt.plot(X, A, label="bakshi")
-    plt.legend()
+    for i in range(n+1):
+        bs_price = black_scholes_price(S[i], K, T, r, 0, sigma)
+        bs_prices.append(bs_price)
+        bs_iv.append(implied_vol(S[i], K, T, r, bs_price, error, maxiter))
+        h_price = heston_prices(
+            S[i], K, V, T, r, kappa, theta, lambd, rho, sigma, upper_bound)
+        h_prices.append(h_price)
+        h_iv.append(implied_vol(S[i], K, T, r, h_price, error, maxiter))
+        ba_price = bakshi_prices(
+            S[i], K, V, T, r, kappa, theta, lambdajump, rho, sigma, muj, sigmaj, upper_bound)
+        ba_prices.append(ba_price)
+        ba_iv.append(implied_vol(S[i], K, T, r, ba_price, error, maxiter))
+
+    plt.plot(S, bs_iv, label="Black Scholes implied volatility")
+    plt.plot(S, h_iv, label="Heston implied volatility")
+    plt.plot(S, ba_iv, label="Bakshi implied volatility")
+    plt.xlabel("S0")
+    plt.ylabel("Implied volatility")
+    plt.legend(loc = "upper left")
+    plt.show()
+
+    plt.plot(S, bs_prices, label="Black Scholes call prices")
+    plt.plot(S, h_prices, label="Heston call prices")
+    plt.plot(S, ba_prices, label="Bakshi call prices")
+    plt.xlabel("S0")
+    plt.ylabel("Call prices")
+    plt.legend(loc = "upper left")
     plt.show()
 
 
