@@ -14,29 +14,29 @@ from scipy.integrate import quad
 
 def main():
     S0= 100
-    # V = 0.04
+    V = 0.04
     # K = 100
     # T = 1
     r = 0.05
     sigma = 0.20
-    delta = 0
-    # kappa = 1
-    # theta = 0.2
-    # lambd = 0  # market price of vol
-    # lambdajump = 0.5  # jump rate
-    # muj = -0.1
-    # sigmaj = 0.07
-    # rho = 0.1
-    # upper_bound = 1000
+    # delta = 0
+    kappa = 1
+    theta = 0.2
+    lambd = 0  # market price of vol
+    lambdajump = 0.5  # jump rate
+    muj = -0.1
+    sigmaj = 0.07
+    rho = 0.1
+    upper_bound = 1000
 
     # error = 0.01
     # maxiter = 50
     T = 1
     std_error = 0.05
     maturity =  0.5
-    model ="black_scholes"
-    model_parameters = {"S0" : S0,"r" : r, "delta":delta, "sigma": sigma}
-    call_prices,spot_prices = generate_call_prices(T,maturity, model, model_parameters,std_error,10)
+    model ="heston"
+    model_parameters = {"S0" : S0,"V0": V,"r" : r, "sigma": sigma,"kappa": kappa,"theta": theta,"rho": rho, "lambda_jump": lambdajump,"muj": muj, "sigmaj":sigmaj,"lambd": lambd}
+    call_prices,spot_prices = generate_call_prices(T,maturity, model, model_parameters,std_error,2,100,upper_bound)
 
     implied_volatility = compute_implied_volatility(call_prices, spot_prices,0.5,r)
     plt.plot(implied_volatility[0],"o")
