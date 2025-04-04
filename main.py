@@ -19,7 +19,7 @@ def main():
     # T = 1
     r = 0.05
     sigma = 0.20
-    # delta = 0
+    delta = 0
     kappa = 1
     theta = 0.2
     lambd = 0  # market price of vol
@@ -34,10 +34,13 @@ def main():
     T = 1
     std_error = 0.05
     maturity =  0.5
-    model ="heston"
-    model_parameters = {"S0" : S0,"V0": V,"r" : r, "sigma": sigma,"kappa": kappa,"theta": theta,"rho": rho, "lambda_jump": lambdajump,"muj": muj, "sigmaj":sigmaj,"lambd": lambd}
-    call_prices,spot_prices = generate_call_prices(T,maturity, model, model_parameters,std_error,2,100,upper_bound)
+    model ="bakshi" 
+    model_parameters = {"S0" : S0,"V0": V,"r" : r,"delta": delta, "sigma": sigma,"kappa": kappa,"theta": theta,"rho": rho, "lambda_jump": lambdajump,"muj": muj, "sigmaj":sigmaj,"lambd": lambd}
+    call_prices,spot_prices = generate_call_prices(T,maturity, model, model_parameters,std_error,1,100,upper_bound)
 
+    plt.plot(call_prices[0],"o")
+    plt.show()
+    
     implied_volatility = compute_implied_volatility(call_prices, spot_prices,0.5,r)
     plt.plot(implied_volatility[0],"o")
     plt.show()
