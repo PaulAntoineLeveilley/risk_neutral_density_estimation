@@ -1,5 +1,7 @@
 import numpy as np
 
+from config import RELATIVE_STRIKE_UPPER_BOUND,RELATIVE_STRIKE_LOWER_BOUND,NUMBER_OF_STRIKES
+
 from models.black_scholes import monte_carlo_simulations_bs
 from pricing.black_scholes_pricing import black_scholes_price
 
@@ -52,9 +54,9 @@ def generate_call_prices_bs(T : float, maturity : float, model_parameters : dict
     delta = model_parameters["delta"]
     sigma = model_parameters["sigma"]
     spot_prices = monte_carlo_simulations_bs(S0, T,r,sigma, n)
-    call_prices = np.zeros((n,50))
+    call_prices = np.zeros((n,NUMBER_OF_STRIKES))
     for i,spot in enumerate(spot_prices):
-        strike_range = np.linspace(0.8*spot,1.2*spot, 50)
+        strike_range = np.linspace(RELATIVE_STRIKE_LOWER_BOUND*spot,RELATIVE_STRIKE_UPPER_BOUND*spot,NUMBER_OF_STRIKES)
         for j, strike in enumerate(strike_range) :
             epsilon = np.random.normal(0,std_error)
             call_prices[i,j]= black_scholes_price(spot,strike,maturity,r,delta, sigma)*(1+epsilon)
@@ -84,12 +86,12 @@ def generate_call_prices_heston(T : float, maturity : float, model_parameters : 
     rho = model_parameters["rho"]
     lambd = model_parameters["lambd"]
     spot_prices,vols = monte_carlo_simulations_heston(S0,V0,T,r,sigma,kappa, theta,rho,n_steps,n)
-    call_prices = np.zeros((n,50))
+    call_prices = np.zeros((n,NUMBER_OF_STRIKES))
     for i in range(n):
         spot = spot_prices[i]
         vol = vols[i] 
         epsilon = np.random.normal(0,std_error)
-        strike_range = np.linspace(0.8*spot,1.2*spot, 50)
+        strike_range = np.linspace(RELATIVE_STRIKE_LOWER_BOUND*spot,RELATIVE_STRIKE_UPPER_BOUND*spot,NUMBER_OF_STRIKES)
         for j, strike in enumerate(strike_range) :
             epsilon = np.random.normal(0,std_error)
             call_prices[i,j] = heston_prices(spot,strike,vol,maturity,r,kappa,theta,lambd,rho,sigma,upper_bound)*(1+epsilon)
@@ -120,12 +122,12 @@ def generate_call_prices_bakshi(T : float, maturity : float, model_parameters : 
     muj= model_parameters["muj"]
     sigmaj = model_parameters["sigmaj"]
     spot_prices,vols = monte_carlo_simulations_bakshi(S0,V0,T,r,sigma,kappa,theta,rho,lambda_jump,muj,sigmaj,n_steps,n)
-    call_prices = np.zeros((n,50))
+    call_prices = np.zeros((n,NUMBER_OF_STRIKES))
     for i in range(n):
         spot = spot_prices[i]
         vol = vols[i] 
         epsilon = np.random.normal(0,std_error)
-        strike_range = np.linspace(0.8*spot,1.2*spot, 50)
+        strike_range = np.linspace(RELATIVE_STRIKE_LOWER_BOUND*spot,RELATIVE_STRIKE_UPPER_BOUND*spot,NUMBER_OF_STRIKES)
         for j, strike in enumerate(strike_range) :
             epsilon = np.random.normal(0,std_error)
             call_prices[i,j] = bakshi_prices(spot,strike,vol,maturity,r,kappa,theta,lambda_jump,rho,sigma,muj,sigmaj,upper_bound)*(1+epsilon)
