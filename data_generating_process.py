@@ -1,6 +1,6 @@
 import numpy as np
 
-from config import RELATIVE_STRIKE_UPPER_BOUND,RELATIVE_STRIKE_LOWER_BOUND,NUMBER_OF_STRIKES
+from config import RELATIVE_STRIKE_UPPER_BOUND,RELATIVE_STRIKE_LOWER_BOUND,NUMBER_OF_STRIKES,PRECISION,MAX_ITER
 
 from models.black_scholes import monte_carlo_simulations_bs
 from pricing.black_scholes_pricing import black_scholes_price
@@ -148,6 +148,6 @@ def compute_implied_volatility(call_prices, spot_prices, maturity: float,r : flo
     implied_volatility = np.empty_like(call_prices)
     for i,spot in enumerate(spot_prices):
         for j,call_price in enumerate(call_prices[i]):
-            strike = 0.8*spot+(0.4*spot)*j/(p-1) 
-            implied_volatility[i,j] = implied_vol(spot,strike,maturity,r,call_price,0.01,30)
+            strike = RELATIVE_STRIKE_LOWER_BOUND*spot+((RELATIVE_STRIKE_UPPER_BOUND-RELATIVE_STRIKE_LOWER_BOUND)*spot)*j/(p-1) 
+            implied_volatility[i,j] = implied_vol(spot,strike,maturity,r,call_price,PRECISION,MAX_ITER)
     return implied_volatility
