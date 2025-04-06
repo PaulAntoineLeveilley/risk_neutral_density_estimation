@@ -1,4 +1,4 @@
-from pricing.black_scholes_pricing import black_scholes_price, rnd_bs, vega_bs
+from pricing.black_scholes_pricing import black_scholes_price, rnd_bs
 from pricing.heston_pricing import heston_prices, rnd_heston
 from pricing.bakshi_pricing import bakshi_prices, rnd_bakshi
 from models.black_scholes import monte_carlo_simulations_bs
@@ -17,8 +17,8 @@ from scipy.integrate import quad
 def main():
     S0= 100
     V = 0.04
-    K = 100
-    T = 1
+    # K = 100
+    # T = 1
     r = 0.05
     sigma = 0.20
     delta = 0
@@ -31,29 +31,31 @@ def main():
     rho = 0.1
     upper_bound = 1000
 
-    # error = 0.01
-    # # maxiter = 50
-    # T = 1
-    # std_error = 0.05
-    # maturity = 21/365
-    # model ="black_scholes" 
-    # model_parameters = {"S0" : S0,"V0": V,"r" : r,"delta": delta, "sigma": sigma,"kappa": kappa,"theta": theta,"rho": rho, "lambda_jump": lambdajump,"muj": muj, "sigmaj":sigmaj,"lambd": lambd}
-    # call_prices,spot_prices = generate_call_prices(T,maturity, model, model_parameters,std_error,1,100,upper_bound)
-    # implied_volatility = compute_implied_volatility(call_prices, spot_prices,maturity,r)
-    # spot = spot_prices[0]
-    # implied_vol = implied_volatility[0][::-1]
+    error = 0.01
+    # maxiter = 50
+    T = 1
+    std_error = 0.05
+    maturity = 21/365
+    model ="black_scholes" 
 
-    # plt.plot(call_prices[0],"o")
-    # plt.show()
+    compute_vega = True
 
-    # plt.plot(S_OVER_K_RANGE,implied_vol,"o")
-    # plt.show()
+    model_parameters = {"S0" : S0,"V0": V,"r" : r,"delta": delta, "sigma": sigma,"kappa": kappa,"theta": theta,"rho": rho, "lambda_jump": lambdajump,"muj": muj, "sigmaj":sigmaj,"lambd": lambd}
+    data = generate_call_prices(T,maturity, model, model_parameters,std_error,1,compute_vega,100,upper_bound)
 
-    S_range = np.linspace(80,120,50)
-    vega = lambda x : vega_bs(x,K,T,r,delta,sigma)
-    vega_range = vega(S_range)
+    spot_prices = data["spot_prices"]
+    call_prices = data["call_prices"]
+    vega  = data["vega"]
 
-    plt.plot(S_range,vega_range)
+    implied_volatility = compute_implied_volatility(call_prices, spot_prices,maturity,r)
+    spot = spot_prices[0]
+    implied_vol = implied_volatility[0][::-1]
+
+    plt.plot(call_prices[0],"o")
     plt.show()
+
+    plt.plot(S_OVER_K_RANGE,implied_vol,"o")
+    plt.show() 
+
 if __name__ == "__main__":
     main()
