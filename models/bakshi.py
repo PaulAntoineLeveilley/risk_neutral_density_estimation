@@ -3,7 +3,7 @@ import numpy as np
 
 def monte_carlo_simulations_bakshi(S0, V0, T, r, sigma, kappa, theta, rho, lambd, muj, sigmaj, n_steps, n_paths):
     """
-    Computes monte carlo simulations for heston model
+    Computes monte carlo simulations for bakshi model
 
     Parameters : 
     - S0 : spot price
