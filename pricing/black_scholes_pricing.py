@@ -33,3 +33,18 @@ def rnd_bs(S: float, T: float, r: float, sigma: float, delta: float, x: float):
     - x : point at which the density is computed
     """
     return np.exp(-(np.log(x/S)-T*(r-delta-(sigma**2)/2))**2/(2*T*sigma**2))/(x*np.sqrt(2*math.pi*T*sigma**2))
+
+def vega_bs(S: float, K: float, T: float, r: float, delta: float, sigma: float):
+    """
+    Computes the vega of an european call option in the black scholes model.
+
+    Parameters : 
+    - S : spot price
+    - K : strike
+    - T : time to maturity
+    - r : interest rate
+    - delta : divident yield
+    - sigma : volatility
+    """
+    d1 = (np.log(S/K)+(r-delta + sigma**2/2)*T)/(sigma*np.sqrt(T))
+    return S*np.sqrt(T)*np.exp(-(d1**2)/2)/np.sqrt(2*math.pi)
