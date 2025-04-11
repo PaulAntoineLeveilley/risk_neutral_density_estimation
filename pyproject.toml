@@ -1,0 +1,19 @@
+[project]
+name = "risk-neutral-density-estimation"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "paul-antoine.leveilley@dauphine.eu"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy (>=2.2.4,<3.0.0)",
+    "matplotlib (>=3.10.1,<4.0.0)",
+    "scipy (>=1.15.2,<2.0.0)",
+    "py-vollib (>=1.0.1,<2.0.0)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
