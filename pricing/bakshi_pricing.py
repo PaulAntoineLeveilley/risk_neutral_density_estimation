@@ -72,7 +72,9 @@ def P(i: int, S: float, T: float, V: float, K: float, r: float, kappa: float, th
     """
     def integrand(phi): return (np.exp(-1j*phi*np.log(K))*f(i, S, V, T,
                                                             r, kappa, theta, lambd, rho, sigma, muj, sigmaj, phi)/(1j*phi)).real
-    integral = quad(integrand, 0, upper_bound)[0]
+    integral,error = quad(integrand, 0, upper_bound)
+    print("Estimate of the integration error :")
+    print(error)
     return 0.5+integral/math.pi
 
 
@@ -131,4 +133,5 @@ def compute_C_D_E(i: int, T: float, r: float, kappa: float, theta: float, lambd:
     D = (h+d)*(1-np.exp(d*T))/((1-g*np.exp(d*T))*(sigma**2))
     E = lambd*(1+muj)*T*(((1+muj)**(1j*phi))*np.exp(1j*phi *
                                                     (1+1j*phi)*(sigmaj**2)/2)-1)-1j*lambd*phi*muj*T
+    # E = lambd * T * (np.exp(1j * phi * muj - 0.5 * (sigmaj**2) * phi**2) - 1)
     return C, D, E
