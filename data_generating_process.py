@@ -240,14 +240,14 @@ def generate_call_prices_bakshi(
             call_prices[i, j] = call_price + noise
             if compute_vega:
                 vega[i, j] = vega_bs(spot, strike, maturity, r, 0, sigma)
-        if compute_vega:
-            return {
-                "call_prices": call_prices,
-                "spot_prices": spot_prices,
-                "vega": vega,
-            }
-        else:
-            return {"call_prices": call_prices, "spot_prices": spot_prices}
+    if compute_vega:
+        return {
+            "call_prices": call_prices,
+            "spot_prices": spot_prices,
+            "vega": vega,
+        }
+    else:
+        return {"call_prices": call_prices, "spot_prices": spot_prices}
 
 
 def compute_implied_volatility(call_prices, spot_prices, maturity: float, r: float):

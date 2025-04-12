@@ -29,7 +29,7 @@ def main():
 
     T = 252 / 365
     maturity = 63 / 365
-    model = "black_scholes"
+    model = "bakshi"
 
     compute_vega = False
 
