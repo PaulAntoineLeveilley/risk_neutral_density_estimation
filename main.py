@@ -35,13 +35,11 @@ def main():
 
     upper_bound = 1000
 
-    T = 1
-    maturity = 21 / 365
+    T = 252 / 365
+    maturity = 63 / 365
     model = "black_scholes"
 
     compute_vega = False
-
-    lam = 0.1
 
     model_parameters = {
         "S0": S0,
