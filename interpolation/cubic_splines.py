@@ -3,7 +3,7 @@ from scipy.interpolate import make_smoothing_spline
 
 def interpolating_cs(s_over_k_range: np.ndarray,implied_volatility : np.ndarray,weights : np.ndarray = None,lam : float = None):
     """
-    Interpolates the implied volatility accros strikes using cubic splines
+    Interpolates the implied volatility accros spot/strikes using cubic splines
     
     Parameters :
     s_over_k_range : the range of spot/strikes accros which to interpolate
