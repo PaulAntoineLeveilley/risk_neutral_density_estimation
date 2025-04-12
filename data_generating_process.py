@@ -234,12 +234,10 @@ def generate_call_prices_bakshi(
                 upper_bound,
             )
             intrinsic_value = np.maximum(spot - strike * np.exp(-r * maturity), 0)
-            print("call price -intrinsic value")
-            print(call_price - intrinsic_value)
-            # noise = np.random.normal(0,STD_ERROR*call_price)
-            # while not call_price+noise > intrinsic_value:
-            # noise = np.random.normal(0,STD_ERROR*call_price)
-            call_prices[i, j] = call_price  # +noise
+            noise = np.random.normal(0, STD_ERROR * call_price)
+            while not call_price + noise > intrinsic_value:
+                noise = np.random.normal(0, STD_ERROR * call_price)
+            call_prices[i, j] = call_price + noise
             if compute_vega:
                 vega[i, j] = vega_bs(spot, strike, maturity, r, 0, sigma)
         if compute_vega:
