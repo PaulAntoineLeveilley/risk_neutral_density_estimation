@@ -31,6 +31,6 @@ def monte_carlo_simulations_bakshi(S0, V0, T, r, sigma, kappa, theta, rho, lambd
         p = np.random.uniform(0, 1)
         if p < lambd*dt:
             J = np.exp(np.random.normal(np.log(1+muj)-(sigmaj**2)/2, sigmaj))-1
-        S += r*S*dt + S*np.sqrt(np.maximum(V, 0))*dW1[i, :] + J
+        S += (r-lambd*muj)*S*dt + S*np.sqrt(np.maximum(V, 0))*dW1[i, :] + J
         V += kappa*(theta - V)*dt + sigma*np.sqrt(np.maximum(V, 0))*dW2[i, :]
     return S,V
