@@ -1,15 +1,7 @@
-from pricing.black_scholes_pricing import black_scholes_price, rnd_bs
-from pricing.heston_pricing import heston_prices, rnd_heston
-from pricing.bakshi_pricing import bakshi_prices, rnd_bakshi
-from models.black_scholes import monte_carlo_simulations_bs
-from models.heston import monte_carlo_simulations_heston
-from models.bakshi import monte_carlo_simulations_bakshi
 from data_generating_process import generate_call_prices, compute_implied_volatility
 from interpolation.cubic_splines import interpolating_cs
 from config import (
-    S_OVER_K_RANGE,
-    RELATIVE_STRIKE_LOWER_BOUND,
-    RELATIVE_STRIKE_UPPER_BOUND,
+    S_OVER_K_RANGE,RELATIVE_STRIKE_LOWER_BOUND,RELATIVE_STRIKE_UPPER_BOUND
 )
 
 import matplotlib.pyplot as plt
@@ -39,7 +31,7 @@ def main():
     maturity = 63 / 365
     model = "black_scholes"
 
-    compute_vega = False
+    compute_vega = True
 
     model_parameters = {
         "S0": S0,
@@ -57,21 +49,30 @@ def main():
         "lambd": lambd,
     }
     data = generate_call_prices(
-        T, maturity, model, model_parameters, 1, compute_vega, 100, upper_bound
+        T, maturity, model, model_parameters, 10, compute_vega, 100, upper_bound
     )
 
     spot_prices = data["spot_prices"]
     call_prices = data["call_prices"]
+    vega = data["vega"]
 
     implied_volatility = compute_implied_volatility(
         call_prices, spot_prices, maturity, r
     )
-    implied_vol_reversed = implied_volatility[0][::-1]
+
+    implied_vol_reversed = implied_volatility[:,::-1]
+    weights = vega[:,::-1]
+
+    lam = 0.01
+    interpolating_cubic_spline = interpolating_cs(S_OVER_K_RANGE,implied_vol_reversed,weights,lam)[5]
+    coarse_s_over_k_range = np.linspace(1/RELATIVE_STRIKE_UPPER_BOUND,1/RELATIVE_STRIKE_LOWER_BOUND,200)
+    interpolating_line = interpolating_cubic_spline(coarse_s_over_k_range)
 
     plt.plot(call_prices[0], "o")
     plt.show()
 
-    plt.plot(S_OVER_K_RANGE, implied_vol_reversed, "o")
+    plt.plot(S_OVER_K_RANGE, implied_vol_reversed[5], "o",label = 'generated implied volatility')
+    plt.plot(coarse_s_over_k_range,interpolating_line,color = 'r',label = 'interpolation')
     plt.show()
 
 
