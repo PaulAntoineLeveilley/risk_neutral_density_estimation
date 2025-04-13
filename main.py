@@ -80,8 +80,8 @@ def main():
 
     #fitting an estimation model to the implied volatilities
 
-    estimators  = interpolating_cs(S_OVER_K_RANGE,implied_vol_reversed,vega_reversed,lam = 0.9)
-    # estimators = interpolating_kernelreg(S_OVER_K_RANGE,implied_vol_reversed)
+    # estimators  = interpolating_cs(S_OVER_K_RANGE,implied_vol_reversed,vega_reversed,lam = 0.9)
+    estimators = interpolating_kernelreg(S_OVER_K_RANGE,implied_vol_reversed)
     # estimators = interpolating_rbf(S_OVER_K_RANGE,implied_vol_reversed,num_centers=5)
 
     #computing the predictions of the models on a grid
