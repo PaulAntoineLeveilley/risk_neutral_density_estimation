@@ -1,6 +1,11 @@
 import numpy as np
 from scipy.stats import norm
-from config import RELATIVE_STRIKE_LOWER_BOUND, RELATIVE_STRIKE_UPPER_BOUND,COARSE_S_OVER_K_RANGE,NUMBER_OF_RND
+from config import (
+    RELATIVE_STRIKE_LOWER_BOUND,
+    RELATIVE_STRIKE_UPPER_BOUND,
+    COARSE_S_OVER_K_RANGE,
+    NUMBER_OF_RND,
+)
 
 
 def black_scholes_price(S: float, K: float, T: float, r: float, sigma: float):
@@ -18,15 +23,19 @@ def black_scholes_price(S: float, K: float, T: float, r: float, sigma: float):
     d2 = d1 - sigma * np.sqrt(T)
     return S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
 
-def estimators_to_prediction(estimators : np.ndarray):
+
+def estimators_to_prediction(estimators: np.ndarray):
     """
     Takes as input an array of models and outputs the prediction
     of theses models.
 
-    Parameters : 
+    Parameters :
     - estimators : an array containing functions
     """
-    return np.array([estimators[i](COARSE_S_OVER_K_RANGE) for i in range(NUMBER_OF_RND)])
+    return np.array(
+        [estimators[i](COARSE_S_OVER_K_RANGE) for i in range(NUMBER_OF_RND)]
+    )
+
 
 def implied_volatility_to_call_prices(
     implied_volatility: np.ndarray,
@@ -52,13 +61,15 @@ def implied_volatility_to_call_prices(
     call_prices = np.empty_like(implied_volatility)
     for i in range(n):
         spot = spot_prices[i]
-        strike_range  = np.linspace(spot*RELATIVE_STRIKE_LOWER_BOUND,spot*RELATIVE_STRIKE_UPPER_BOUND,p)[::-1]
-        #need to reverse because implied_volatility
-        #is given as a function of S/K
+        strike_range = np.linspace(
+            spot * RELATIVE_STRIKE_LOWER_BOUND, spot * RELATIVE_STRIKE_UPPER_BOUND, p
+        )[::-1]
+        # need to reverse because implied_volatility
+        # is given as a function of S/K
         for j in range(p):
             strike = strike_range[j]
             sigma = implied_volatility[i, j]
             call_prices[i, j] = black_scholes_price(spot, strike, maturity, r, sigma)
-    #outputs call prices as a function of K at points K evenly spaced between S*RELATIVE_STRIKE_LOWER_BOUND
-    #and S*RELATIVE_STRIKE_UPPER_BOUND
-    return call_prices[:,::-1]
+    # outputs call prices as a function of K at points K evenly spaced between S*RELATIVE_STRIKE_LOWER_BOUND
+    # and S*RELATIVE_STRIKE_UPPER_BOUND
+    return call_prices[:, ::-1]

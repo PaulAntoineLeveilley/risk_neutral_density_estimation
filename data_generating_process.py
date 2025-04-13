@@ -95,9 +95,14 @@ def generate_call_prices_bs(
             if compute_vega:
                 vega[i, j] = vega_bs(spot, strike, maturity, r, delta, sigma)
     if compute_vega:
-        return {"call_prices": call_prices, "spot_prices": spot_prices, "vega": vega}
+        return {
+            "call_prices": call_prices,
+            "spot_prices": spot_prices,
+            "vols": None,
+            "vega": vega,
+        }
     else:
-        return {"call_prices": call_prices, "spot_prices": spot_prices}
+        return {"call_prices": call_prices, "spot_prices": spot_prices, "vols": None}
 
 
 def generate_call_prices_heston(
@@ -166,9 +171,14 @@ def generate_call_prices_heston(
             if compute_vega:
                 vega[i, j] = vega_bs(spot, strike, maturity, r, 0, sigma)
     if compute_vega:
-        return {"call_prices": call_prices, "spot_prices": spot_prices, "vega": vega}
+        return {
+            "call_prices": call_prices,
+            "spot_prices": spot_prices,
+            "vols": vols,
+            "vega": vega,
+        }
     else:
-        return {"call_prices": call_prices, "spot_prices": spot_prices}
+        return {"call_prices": call_prices, "spot_prices": spot_prices, "vols": vols}
 
 
 def generate_call_prices_bakshi(
@@ -244,10 +254,11 @@ def generate_call_prices_bakshi(
         return {
             "call_prices": call_prices,
             "spot_prices": spot_prices,
+            "vols": vols,
             "vega": vega,
         }
     else:
-        return {"call_prices": call_prices, "spot_prices": spot_prices}
+        return {"call_prices": call_prices, "spot_prices": spot_prices, "vols": vols}
 
 
 def compute_implied_volatility(call_prices, spot_prices, maturity: float, r: float):

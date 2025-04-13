@@ -41,18 +41,21 @@ def NW_estimator(X: np.array, Y: np.array, h: float):
         gaussian_kernel(x - X[i], h) * Y[i] for i in range(len(X))
     ) / sum(gaussian_kernel(x - X[i], h) for i in range(len(X)))
 
+
 def NW_estimator_for_fast(X: np.array, Y: np.array, h: float):
     """
     Computes the Nadaraya-Watson estimator in a compatible format for the faster cross-validation
-    
+
     Parameters:
     - X : explanatory variable
     - Y : target variable
-    - h : bandwidth  
-    """       
+    - h : bandwidth
+    """
     weight_denom = lambda x: sum(gaussian_kernel(x - X[i], h) for i in range(len(X)))
-    NW_estimator_fct = lambda x: sum(gaussian_kernel(x - X[i], h)*Y[i] for i in range(len(X)))/weight_denom(x)
-    
+    NW_estimator_fct = lambda x: sum(
+        gaussian_kernel(x - X[i], h) * Y[i] for i in range(len(X))
+    ) / weight_denom(x)
+
     return weight_denom, NW_estimator_fct
 
 
@@ -65,7 +68,7 @@ def find_optimal_h_CV(X: np.array, Y: np.array):
     - X : explanatory variable
     - Y : target variable
     """
-    h_min = 1/20 * (X.max() - X.min())
+    h_min = 1 / 20 * (X.max() - X.min())
     h_max = X.max() - X.min()
     ### Defining the domain on which we search for the optimal value
     h_candidates = np.linspace(h_min, h_max, 20)
@@ -90,29 +93,36 @@ def find_optimal_h_CV(X: np.array, Y: np.array):
 
     return h_candidates[np.argmin(CV_err_h)]
 
+
 def find_optimal_h_CV_fast(X: np.array, Y: np.array):
     """
-    Finds the optimal bandwidth for given data using cross-validation but in a less computational way 
-    
+    Finds the optimal bandwidth for given data using cross-validation but in a less computational way
+
     Parameters:
     Parameters:
     - X : explanatory variable
     - Y : target variable
     """
-    
-    h_min = 1/20*(X.max() - X.min())
+
+    h_min = 1 / 20 * (X.max() - X.min())
     h_max = X.max() - X.min()
     ### Defining the domain on which we search for the optimal value
     h_candidates = np.linspace(h_min, h_max, 20)
     ### Saving the value of the objective function for every candidate h
     CV_err_h = np.empty_like(h_candidates)
-    
+
     for i, h_iter in enumerate(h_candidates):
-        
+
         weight_denom, NW_estimator_use = NW_estimator_for_fast(X, Y, h_iter)
 
-        CV_err_h[i] = np.mean(((Y - NW_estimator_use(X))/(1 - 1/np.sqrt(2*math.pi)/weight_denom(X)))**2)
-        
+        CV_err_h[i] = np.mean(
+            (
+                (Y - NW_estimator_use(X))
+                / (1 - 1 / np.sqrt(2 * math.pi) / weight_denom(X))
+            )
+            ** 2
+        )
+
     return h_candidates[np.argmin(CV_err_h)]
 
 

@@ -8,9 +8,9 @@ def monte_carlo_simulations_bs(S, T, r, sigma, n_paths):
     Parameters :
     - S : spot price
     - T : time horizon
-    - r : interest rate 
+    - r : interest rate
     - sigma : volatility
-    - n_paths : number of paths to simulate 
+    - n_paths : number of paths to simulate
     """
     N = np.random.normal(0, 1, n_paths)
-    return S*np.exp((r-(sigma**2)/2)*T+sigma*np.sqrt(T)*N)
+    return S * np.exp((r - (sigma**2) / 2) * T + sigma * np.sqrt(T) * N)
