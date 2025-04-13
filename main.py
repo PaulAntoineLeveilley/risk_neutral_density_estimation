@@ -4,6 +4,7 @@ from interpolation.cubic_splines import interpolating_cs
 from interpolation.rbf_neural_network import interpolating_rbf
 from computation_rnd.compute_call_price import implied_volatility_to_call_prices,estimators_to_prediction
 from computation_rnd.derive_rnd import derive_rnd
+from computation_rnd.compute_theoretical_rnd import compute_theoretical_rnd
 from config import (
     S_OVER_K_RANGE,
     NUMBER_OF_RND,STRIKE_RANGE,COARSE_STRIKE_RANGE
@@ -35,7 +36,7 @@ def main():
     #other parameters
     T = 252 / 365 #time horizon for monter carlo simulations
     maturity = 63 / 365 #maturity of the calls
-    model = "bakshi" #model to use
+    model = "black_scholes" #model to use
 
     #True if you need to compute the vega (for the weights of the cubic 
     # spline interpolation) 
@@ -80,8 +81,8 @@ def main():
 
     #fitting an estimation model to the implied volatilities
 
-    # estimators  = interpolating_cs(S_OVER_K_RANGE,implied_vol_reversed,vega_reversed,lam = 0.9)
-    estimators = interpolating_kernelreg(S_OVER_K_RANGE,implied_vol_reversed)
+    estimators  = interpolating_cs(S_OVER_K_RANGE,implied_vol_reversed,vega_reversed,lam = 0.9)
+    # estimators = interpolating_kernelreg(S_OVER_K_RANGE,implied_vol_reversed)
     # estimators = interpolating_rbf(S_OVER_K_RANGE,implied_vol_reversed,num_centers=5)
 
     #computing the predictions of the models on a grid
@@ -92,6 +93,8 @@ def main():
 
     #computing rnd from call prices
     rnds = derive_rnd(estimated_call_prices,spot_prices,maturity,r)
+    #compute associates theoretical rnd
+    theoretical_rnds = compute_theoretical_rnd(spot_prices, model, model_parameters, maturity)
 
     plt.scatter(spot_prices[0]*STRIKE_RANGE,call_prices[0],color = 'b',label = 'True call prices', marker = 'o')
     plt.plot(spot_prices[0]*COARSE_STRIKE_RANGE,estimated_call_prices[0],color = 'r',label = 'estimated call prices')
@@ -101,6 +104,7 @@ def main():
     plt.show()
 
     plt.plot(spot_prices[0]*COARSE_STRIKE_RANGE,rnds[0],color = 'r',label = 'estimated rnd')
+    plt.plot(spot_prices[0]*COARSE_STRIKE_RANGE,theoretical_rnds[0],color = 'b',label = 'theoretical rnd')
     plt.grid(True)
     plt.xlabel("S")
     plt.legend()
