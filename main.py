@@ -2,10 +2,11 @@ from data_generating_process import generate_call_prices, compute_implied_volati
 from interpolation.kernel_regression import interpolating_kernelreg
 from interpolation.cubic_splines import interpolating_cs
 from interpolation.rbf_neural_network import interpolating_rbf
-from computation_rnd.computation_rnd import implied_volatility_to_call_prices,estimators_to_prediction
+from computation_rnd.compute_call_price import implied_volatility_to_call_prices,estimators_to_prediction
+from computation_rnd.derive_rnd import derive_rnd
 from config import (
     S_OVER_K_RANGE,
-    NUMBER_OF_RND,COARSE_S_OVER_K_RANGE
+    NUMBER_OF_RND,STRIKE_RANGE,COARSE_STRIKE_RANGE
 )
 
 import matplotlib.pyplot as plt
@@ -79,19 +80,30 @@ def main():
 
     #fitting an estimation model to the implied volatilities
 
-    # estimators  = interpolating_cs(S_OVER_K_RANGE,implied_vol_reversed,vega_reversed,lam = 0.9)
+    estimators  = interpolating_cs(S_OVER_K_RANGE,implied_vol_reversed,vega_reversed,lam = 0.9)
     # estimators = interpolating_kernelreg(S_OVER_K_RANGE,implied_vol_reversed)
-    estimators = interpolating_rbf(S_OVER_K_RANGE,implied_vol_reversed,num_centers=5)
+    # estimators = interpolating_rbf(S_OVER_K_RANGE,implied_vol_reversed,num_centers=5)
 
     #computing the predictions of the models on a grid
     predictions = estimators_to_prediction(estimators)
 
     #transforming the implied volatility prediction into call prices prediction
     estimated_call_prices = implied_volatility_to_call_prices(predictions,spot_prices,maturity,r)
-    
-    plt.scatter(S_OVER_K_RANGE,call_prices[0],color = 'b',label = 'True call prices', marker = 'o')
-    plt.plot(COARSE_S_OVER_K_RANGE,estimated_call_prices[0],color = 'r',label = 'estimated call prices')
+
+    #computing rnd from call prices
+    rnds = derive_rnd(estimated_call_prices,spot_prices,maturity,r)
+
+    plt.scatter(spot_prices[0]*STRIKE_RANGE,call_prices[0],color = 'b',label = 'True call prices', marker = 'o')
+    plt.plot(spot_prices[0]*COARSE_STRIKE_RANGE,estimated_call_prices[0],color = 'r',label = 'estimated call prices')
     plt.grid(True)
+    plt.xlabel("Strike")
+    plt.ylabel('call prices')
+    plt.show()
+
+    plt.plot(spot_prices[0]*COARSE_STRIKE_RANGE,rnds[0],color = 'r',label = 'estimated rnd')
+    plt.grid(True)
+    plt.xlabel("S")
+    plt.legend()
     plt.show()
     
 if __name__ == "__main__":
