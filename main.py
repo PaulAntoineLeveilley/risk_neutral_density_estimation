@@ -8,7 +8,10 @@ from computation_rnd.compute_call_price import (
 )
 from computation_rnd.derive_rnd import derive_rnd
 from computation_rnd.compute_theoretical_rnd import compute_theoretical_rnd
-from config import S_OVER_K_RANGE, NUMBER_OF_RND, STRIKE_RANGE, COARSE_STRIKE_RANGE
+from config import S_OVER_K_RANGE, NUMBER_OF_RND, STRIKE_RANGE, COARSE_STRIKE_RANGE, NUM_SAMPLES 
+from kolmogorov_smirnov_test.array_to_pdf import  arrays_to_pdfs
+from kolmogorov_smirnov_test.sample import sample_from_pdfs
+
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -111,37 +114,48 @@ def main():
         state_dict, model, model_parameters, maturity, upper_bound
     )
 
-    plt.scatter(
-        spot_prices[0] * STRIKE_RANGE,
-        call_prices[0],
-        color="b",
-        label="True call prices",
-        marker="o",
-    )
-    plt.plot(
-        spot_prices[0] * COARSE_STRIKE_RANGE,
-        estimated_call_prices[0],
-        color="r",
-        label="estimated call prices",
-    )
-    plt.grid(True)
-    plt.xlabel("Strike")
-    plt.ylabel("call prices")
-    plt.show()
+    # computing a valid rnd from estimated rnd
+    estimated_pdfs = arrays_to_pdfs(rnds)    
+    true_pdfs = arrays_to_pdfs(theoretical_rnds)
 
-    plt.plot(
-        spot_prices[0] * COARSE_STRIKE_RANGE, rnds[0], color="r", label="estimated rnd"
-    )
-    plt.plot(
-        spot_prices[0] * COARSE_STRIKE_RANGE,
-        theoretical_rnds[0],
-        color="b",
-        label="theoretical rnd",
-    )
-    plt.grid(True)
-    plt.xlabel("S")
-    plt.legend()
-    plt.show()
+    # sampling from estimated densities
+    samples_estimated_rnd = sample_from_pdfs(estimated_pdfs,NUM_SAMPLES,spot_prices)
+    samples_true_rnd = sample_from_pdfs(true_pdfs,NUM_SAMPLES,spot_prices)
+
+    print(samples_estimated_rnd)
+    print(samples_true_rnd)
+
+    # plt.scatter(
+    #     spot_prices[0] * STRIKE_RANGE,
+    #     call_prices[0],
+    #     color="b",
+    #     label="True call prices",
+    #     marker="o",
+    # )
+    # plt.plot(
+    #     spot_prices[0] * COARSE_STRIKE_RANGE,
+    #     estimated_call_prices[0],
+    #     color="r",
+    #     label="estimated call prices",
+    # )
+    # plt.grid(True)
+    # plt.xlabel("Strike")
+    # plt.ylabel("call prices")
+    # plt.show()
+
+    # plt.plot(
+    #     spot_prices[0] * COARSE_STRIKE_RANGE, rnds[0], color="r", label="renormalized estimated rnd"
+    # )
+    # plt.plot(
+    #     spot_prices[0] * COARSE_STRIKE_RANGE,
+    #     theoretical_rnds[0],
+    #     color="b",
+    #     label="theoretical rnd",
+    # )
+    # plt.grid(True)
+    # plt.xlabel("S")
+    # plt.legend()
+    # plt.show()
 
 
 if __name__ == "__main__":
