@@ -1,6 +1,6 @@
 import numpy as np
 import math
-
+from tqdm import tqdm
 
 def interpolating_kernelreg(s_over_k_range: np.ndarray, implied_volatility: np.ndarray):
     """
@@ -13,7 +13,7 @@ def interpolating_kernelreg(s_over_k_range: np.ndarray, implied_volatility: np.n
     """
     n, _ = np.shape(implied_volatility)
     return np.array(
-        [apply_NW_estimator(s_over_k_range, implied_volatility[i]) for i in range(n)]
+        [apply_NW_estimator(s_over_k_range, implied_volatility[i]) for i in tqdm(range(n))]
     )
 
 

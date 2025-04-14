@@ -1,6 +1,6 @@
 from sklearn.cluster import KMeans
 import numpy as np
-
+from tqdm import tqdm
 
 def interpolating_rbf(
     s_over_k_range: np.ndarray, implied_volatility: np.ndarray, num_centers: int
@@ -15,7 +15,7 @@ def interpolating_rbf(
     X_train = np.array(s_over_k_range).reshape(-1, 1)
     n, _ = np.shape(implied_volatility)
     predictors = []
-    for i in range(n):
+    for i in tqdm(range(n)):
         model = RBFNetwork(num_centers=num_centers)
         y_train = implied_volatility[i]
         model.fit(X_train, y_train)

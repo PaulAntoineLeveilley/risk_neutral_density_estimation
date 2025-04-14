@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.interpolate import make_smoothing_spline
-
+from tqdm import tqdm
 
 def interpolating_cs(
     s_over_k_range: np.ndarray,
@@ -23,6 +23,6 @@ def interpolating_cs(
             make_smoothing_spline(
                 s_over_k_range, implied_volatility[i], weights[i], lam
             )
-            for i in range(n)
+            for i in tqdm(range(n))
         ]
     )

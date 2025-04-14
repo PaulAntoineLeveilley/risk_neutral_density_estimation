@@ -1,7 +1,6 @@
 import numpy as np
 from config import COARSE_STRIKE_RANGE
 
-
 def derive_rnd(
     call_prices: np.ndarray, spot_prices: np.ndarray, maturity: float, r: float
 ):

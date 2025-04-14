@@ -1,7 +1,8 @@
 import numpy as np
 import math
-from py_vollib.black_scholes.implied_volatility import implied_volatility
+from tqdm import tqdm
 
+from py_vollib.black_scholes.implied_volatility import implied_volatility
 from config import (
     RELATIVE_STRIKE_UPPER_BOUND,
     RELATIVE_STRIKE_LOWER_BOUND,
@@ -79,7 +80,7 @@ def generate_call_prices_bs(
     call_prices = np.zeros((n, NUMBER_OF_STRIKES))
     if compute_vega:
         vega = np.zeros((n, NUMBER_OF_STRIKES))
-    for i, spot in enumerate(spot_prices):
+    for i, spot in tqdm(enumerate(spot_prices)):
         strike_range = np.linspace(
             RELATIVE_STRIKE_LOWER_BOUND * spot,
             RELATIVE_STRIKE_UPPER_BOUND * spot,
@@ -141,7 +142,7 @@ def generate_call_prices_heston(
     call_prices = np.zeros((n, NUMBER_OF_STRIKES))
     if compute_vega:
         vega = np.zeros((n, NUMBER_OF_STRIKES))
-    for i in range(n):
+    for i in tqdm(range(n)):
         spot = spot_prices[i]
         vol = vols[i]
         strike_range = np.linspace(
@@ -219,7 +220,7 @@ def generate_call_prices_bakshi(
     call_prices = np.zeros((n, NUMBER_OF_STRIKES))
     if compute_vega:
         vega = np.zeros((n, NUMBER_OF_STRIKES))
-    for i in range(n):
+    for i in tqdm(range(n)):
         spot = spot_prices[i]
         vol = vols[i]
         strike_range = np.linspace(
@@ -273,7 +274,7 @@ def compute_implied_volatility(call_prices, spot_prices, maturity: float, r: flo
     """
     _, p = np.shape(call_prices)
     implied_volatility_array = np.empty_like(call_prices)
-    for i, spot in enumerate(spot_prices):
+    for i, spot in tqdm(enumerate(spot_prices)):
         for j, call_price in enumerate(call_prices[i]):
             strike = RELATIVE_STRIKE_LOWER_BOUND * spot + (
                 (RELATIVE_STRIKE_UPPER_BOUND - RELATIVE_STRIKE_LOWER_BOUND) * spot
