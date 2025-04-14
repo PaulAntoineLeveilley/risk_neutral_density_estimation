@@ -2,8 +2,8 @@ import numpy as np
 
 def arrays_to_pdfs(arrays : np.ndarray):
     """
-    Computes a valid probability density function
-    from an array lign wize.
+    Computes discretes probability distribution functions
+    from an array of arrays representing densities.
 
     Parameters : 
     - arrays : an array of shape n,p where 

@@ -16,5 +16,6 @@ COARSE_STRIKE_RANGE = np.linspace(
 
 COARSE_S_OVER_K_RANGE = np.array([1 / K for K in COARSE_STRIKE_RANGE[::-1]])
 
-
 STD_ERROR = 0.05
+
+NUM_SAMPLES = 10
