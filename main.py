@@ -11,13 +11,14 @@ from computation_rnd.compute_theoretical_rnd import compute_theoretical_rnd
 from config import S_OVER_K_RANGE, NUMBER_OF_RND, STRIKE_RANGE, COARSE_STRIKE_RANGE, NUM_SAMPLES 
 from kolmogorov_smirnov_test.array_to_pdf import  arrays_to_pdfs
 from kolmogorov_smirnov_test.sample import sample_from_pdfs
-
+from kolmogorov_smirnov_test.kolmogorov_test import perform_ks_test
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+import time 
 
 def main():
+    start = time.time()
     # model parameters
     S0 = 7616  # initial spot
     V0 = 0.01  # initial vol (for heston and bakshi)
@@ -39,7 +40,7 @@ def main():
     # other parameters
     T = 252 / 365  # time horizon for monter carlo simulations
     maturity = 63 / 365  # maturity of the calls
-    model = "heston"  # model to use
+    model = "bakshi"  # model to use
 
     # True if you need to compute the vega (for the weights of the cubic
     # spline interpolation)
@@ -93,7 +94,7 @@ def main():
     # fitting an estimation model to the implied volatilities
 
     estimators = interpolating_cs(
-        S_OVER_K_RANGE, implied_vol_reversed, vega_reversed, lam=0.9
+        S_OVER_K_RANGE, implied_vol_reversed, vega_reversed, lam=0.5
     )
     # estimators = interpolating_kernelreg(S_OVER_K_RANGE,implied_vol_reversed)
     # estimators = interpolating_rbf(S_OVER_K_RANGE,implied_vol_reversed,num_centers=5)
@@ -122,40 +123,37 @@ def main():
     samples_estimated_rnd = sample_from_pdfs(estimated_pdfs,NUM_SAMPLES,spot_prices)
     samples_true_rnd = sample_from_pdfs(true_pdfs,NUM_SAMPLES,spot_prices)
 
-    print(samples_estimated_rnd)
-    print(samples_true_rnd)
+    # performing the tests :
+    p_values = perform_ks_test(samples_estimated_rnd,samples_true_rnd)
+ 
+    end  = time.time()
+    print("Total time for procedure :"+ str(end-start)+" seconds")
 
-    # plt.scatter(
-    #     spot_prices[0] * STRIKE_RANGE,
-    #     call_prices[0],
-    #     color="b",
-    #     label="True call prices",
-    #     marker="o",
-    # )
-    # plt.plot(
-    #     spot_prices[0] * COARSE_STRIKE_RANGE,
-    #     estimated_call_prices[0],
-    #     color="r",
-    #     label="estimated call prices",
-    # )
-    # plt.grid(True)
-    # plt.xlabel("Strike")
-    # plt.ylabel("call prices")
-    # plt.show()
 
-    # plt.plot(
-    #     spot_prices[0] * COARSE_STRIKE_RANGE, rnds[0], color="r", label="renormalized estimated rnd"
-    # )
-    # plt.plot(
-    #     spot_prices[0] * COARSE_STRIKE_RANGE,
-    #     theoretical_rnds[0],
-    #     color="b",
-    #     label="theoretical rnd",
-    # )
-    # plt.grid(True)
-    # plt.xlabel("S")
-    # plt.legend()
-    # plt.show()
+    for estimated_call_price in estimated_call_prices:
+        plt.plot(
+            S0*COARSE_STRIKE_RANGE,
+            estimated_call_price
+        )
+    plt.grid(True)
+    plt.xlabel("Strike")
+    plt.ylabel("call prices")
+    plt.show()
+
+    for rnd in rnds:
+        plt.plot(
+            S0 * COARSE_STRIKE_RANGE, rnd
+        )
+    plt.plot(
+        S0 * COARSE_STRIKE_RANGE,
+        theoretical_rnds[0],
+        color="b",linewidth = 3,
+        label="theoretical rnd",
+    )
+    plt.grid(True)
+    plt.xlabel("S")
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":
