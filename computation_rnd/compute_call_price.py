@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.stats import norm
+from tqdm import tqdm
+
 from config import (
     RELATIVE_STRIKE_LOWER_BOUND,
     RELATIVE_STRIKE_UPPER_BOUND,
@@ -33,7 +35,7 @@ def estimators_to_prediction(estimators: np.ndarray):
     - estimators : an array containing functions
     """
     return np.array(
-        [estimators[i](COARSE_S_OVER_K_RANGE) for i in range(NUMBER_OF_RND)]
+        [estimators[i](COARSE_S_OVER_K_RANGE) for i in tqdm(range(NUMBER_OF_RND))]
     )
 
 
@@ -59,7 +61,7 @@ def implied_volatility_to_call_prices(
     """
     n, p = np.shape(implied_volatility)
     call_prices = np.empty_like(implied_volatility)
-    for i in range(n):
+    for i in tqdm(range(n)):
         spot = spot_prices[i]
         strike_range = np.linspace(
             spot * RELATIVE_STRIKE_LOWER_BOUND, spot * RELATIVE_STRIKE_UPPER_BOUND, p

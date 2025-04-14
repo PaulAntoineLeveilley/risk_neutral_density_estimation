@@ -1,4 +1,6 @@
 import numpy as np
+from tqdm import tqdm
+
 from config import COARSE_STRIKE_RANGE
 
 def sample_from_pdf(pdf : np.ndarray,num_sample: int, spot : float):
@@ -24,4 +26,4 @@ def sample_from_pdfs(pdfs : np.ndarray,num_sample : int, spot_prices : np.ndarra
     - num_sample : the number of realizations to sampe from each pdf
     - spot_prices : spot price associated to each rnd
     """
-    return np.array([sample_from_pdf(pdf,num_sample,spot_prices[i]) for i, pdf in enumerate(pdfs)])
+    return np.array([sample_from_pdf(pdf,num_sample,spot_prices[i]) for i, pdf in tqdm(enumerate(pdfs))])

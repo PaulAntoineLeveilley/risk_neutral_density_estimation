@@ -1,4 +1,6 @@
 import numpy as np
+from tqdm import tqdm
+
 from config import COARSE_STRIKE_RANGE, SIZE_COARSE_RANGE
 from pricing.black_scholes_pricing import rnd_bs
 from pricing.heston_pricing import rnd_heston
@@ -55,7 +57,7 @@ def compute_theoretical_rnd_bs(
     sigma = model_parameters["sigma"]
     n = np.shape(spot_prices)[0]
     theoretical_rnds = np.zeros((n, SIZE_COARSE_RANGE))
-    for i in range(n):
+    for i in tqdm(range(n)):
         for j in range(SIZE_COARSE_RANGE):
             spot = spot_prices[i]
             theoretical_rnds[i, j] = rnd_bs(
@@ -90,7 +92,7 @@ def compute_theoretical_rnd_heston(
     lambd = model_parameters["lambd"]
     n = np.shape(spot_prices)[0]
     theoretical_rnds = np.zeros((n, SIZE_COARSE_RANGE))
-    for i in range(n):
+    for i in tqdm(range(n)):
         for j in range(SIZE_COARSE_RANGE):
             spot = spot_prices[i]
             vol = vols[i]
@@ -138,7 +140,7 @@ def compute_theoretical_rnd_bakshi(
     sigmaj = model_parameters["sigmaj"]
     n = np.shape(spot_prices)[0]
     theoretical_rnds = np.zeros((n, SIZE_COARSE_RANGE))
-    for i in range(n):
+    for i in tqdm(range(n)):
         for j in range(SIZE_COARSE_RANGE):
             spot = spot_prices[i]
             vol = vols[i]
