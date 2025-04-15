@@ -8,7 +8,7 @@ from computation_rnd.compute_call_price import (
 )
 from computation_rnd.derive_rnd import derive_rnd
 from computation_rnd.compute_theoretical_rnd import compute_theoretical_rnd
-from config import S_OVER_K_RANGE, NUMBER_OF_RND, STRIKE_RANGE, COARSE_STRIKE_RANGE, NUM_SAMPLES 
+from config import S_OVER_K_RANGE, NUMBER_OF_RND, STRIKE_RANGE, COARSE_STRIKE_RANGE, NUM_SAMPLES,P_VALUE_TRESHOLD
 from kolmogorov_smirnov_test.array_to_pdf import  arrays_to_pdfs
 from kolmogorov_smirnov_test.sample import sample_from_pdfs
 from kolmogorov_smirnov_test.kolmogorov_test import perform_ks_test
@@ -116,7 +116,9 @@ def main():
     # computing rnd from call prices
     print("Computing risk neutral densities from call prices")
     rnds = derive_rnd(estimated_call_prices, spot_prices, maturity, r)
-    # compute associates theoretical rnd
+    # compute statistic features of estimated rnds
+    mean_rnd, confidence_upper, confidence_lower = compute_mean_and_confidence_interval_rnds(rnds)
+    # compute associated theoretical rnd
     state_dict = {"spot_prices": spot_prices, "vols": vols}
     print("computing theoretical rnd")
     theoretical_rnds = compute_theoretical_rnd(
@@ -134,8 +136,15 @@ def main():
     # performing the tests :
     print("Performing the tests")
     p_values = perform_ks_test(samples_estimated_rnd,samples_true_rnd)
+    
+    mean_pvalues = np.mean(p_values)
+    std_pvalues = np.std(p_values)
+    percentage_rejected_H0 = np.mean(p_values>P_VALUE_TRESHOLD)
 
-    mean_rnd, confidence_upper, confidence_lower = compute_mean_and_confidence_interval_rnds(rnds)
+    print("mean p-values : "+str(mean_pvalues))
+    print("Standard deviation of p-values :"+str(std_pvalues))
+    print("Percentage of rejection of H0 : "+ str(percentage_rejected_H0))
+    
 
     end  = time.time()
     print("Total time for procedure :"+ str(end-start)+" seconds")
