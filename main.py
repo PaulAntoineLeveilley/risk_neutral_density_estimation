@@ -139,7 +139,7 @@ def main():
     
     mean_pvalues = np.mean(p_values)
     std_pvalues = np.std(p_values)
-    percentage_rejected_H0 = np.mean(p_values>P_VALUE_TRESHOLD)
+    percentage_rejected_H0 = np.mean(p_values<P_VALUE_TRESHOLD)
 
     print("mean p-values : "+str(mean_pvalues))
     print("Standard deviation of p-values :"+str(std_pvalues))
