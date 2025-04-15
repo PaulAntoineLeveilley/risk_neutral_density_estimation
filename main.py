@@ -8,12 +8,12 @@ from computation_rnd.compute_call_price import (
 )
 from computation_rnd.derive_rnd import derive_rnd
 from computation_rnd.compute_theoretical_rnd import compute_theoretical_rnd
-from config import S_OVER_K_RANGE, NUMBER_OF_RND, STRIKE_RANGE, COARSE_STRIKE_RANGE, NUM_SAMPLES 
+from config import S_OVER_K_RANGE, NUMBER_OF_RND, NUM_SAMPLES,P_VALUE_TRESHOLD,MODEL_PARAMETERS
 from kolmogorov_smirnov_test.array_to_pdf import  arrays_to_pdfs
 from kolmogorov_smirnov_test.sample import sample_from_pdfs
 from kolmogorov_smirnov_test.kolmogorov_test import perform_ks_test
+from plots.plot import plots
 
-from mean_estimated_rnd.average_rnd import compute_mean_and_confidence_interval_rnds 
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,50 +21,18 @@ import time
 
 def main():
     start = time.time()
-    # model parameters
-    S0 = 7616  # initial spot
-    V0 = 0.01  # initial vol (for heston and bakshi)
-    r = 0.045  # interest rate
-    sigma = 0.13764  # vol
-    sigmav = 0.2  # vol of vol (for heston and bakshi)
-    delta = 0  # dividend rate (for black scholes only)
-    kappa = 9  # speed of mean reversion (for heston and bakshi)
-    theta = 0.0189  # longrun mean of vol  (for heston and bakshi)
-    lambd = 0  # market price of vol (heston)
-    lambdajump = 0.59  # jump rate (bakshi)
-    muj = -0.05  # mean size of jumps (bakshi)
-    sigmaj = 0.07  # standard deviation of jumps (bakshi)
-    rho = 0.1  # correlation between brownian motions driving spot and vol (for heston and bakshi)
-
     # upper bound for integration
     upper_bound = 100
 
     # other parameters
     T = 252 / 365  # time horizon for monter carlo simulations
     maturity = 63 / 365  # maturity of the calls
-    model = "bakshi"  # model to use
+    model = "heston"  # model to use
 
     # True if you need to compute the vega (for the weights of the cubic
     # spline interpolation)
     compute_vega = True
-
-    # specifying model parameters
-    model_parameters = {
-        "S0": S0,
-        "V0": V0,
-        "r": r,
-        "delta": delta,
-        "sigma": sigma,
-        "sigmav": sigmav,
-        "kappa": kappa,
-        "theta": theta,
-        "rho": rho,
-        "lambda_jump": lambdajump,
-        "muj": muj,
-        "sigmaj": sigmaj,
-        "lambd": lambd,
-    }
-
+    
     # generate the spot prices and call prices attached to the grid  corresponding to each spot price
     # option to compute the vega of the calls, for cubic spline interpolation
     print("Generating the data : ")
@@ -72,7 +40,7 @@ def main():
         T,
         maturity,
         model,
-        model_parameters,
+        MODEL_PARAMETERS,
         NUMBER_OF_RND,
         compute_vega,
         100,
@@ -86,6 +54,7 @@ def main():
 
     # transforming call prices into implied volatilities
     print("computing implied volatilities")
+    r = MODEL_PARAMETERS['r']
     implied_volatility = compute_implied_volatility(
         call_prices, spot_prices, maturity, r
     )
@@ -116,11 +85,11 @@ def main():
     # computing rnd from call prices
     print("Computing risk neutral densities from call prices")
     rnds = derive_rnd(estimated_call_prices, spot_prices, maturity, r)
-    # compute associates theoretical rnd
+    # compute associated theoretical rnd
     state_dict = {"spot_prices": spot_prices, "vols": vols}
     print("computing theoretical rnd")
     theoretical_rnds = compute_theoretical_rnd(
-        state_dict, model, model_parameters, maturity, upper_bound
+        state_dict, model, MODEL_PARAMETERS, maturity, upper_bound
     )
     print("Performing Kolmogorov Smirnov test")
     # computing a valid rnd from estimated rnd
@@ -134,45 +103,20 @@ def main():
     # performing the tests :
     print("Performing the tests")
     p_values = perform_ks_test(samples_estimated_rnd,samples_true_rnd)
+    
+    mean_pvalues = np.mean(p_values)
+    std_pvalues = np.std(p_values)
+    percentage_rejected_H0 = np.mean(p_values<P_VALUE_TRESHOLD)
 
-    mean_rnd, confidence_upper, confidence_lower = compute_mean_and_confidence_interval_rnds(rnds)
+    print("mean p-values : "+str(mean_pvalues))
+    print("Standard deviation of p-values :"+str(std_pvalues))
+    print("Percentage of rejection of H0 : "+ str(percentage_rejected_H0))
 
     end  = time.time()
     print("Total time for procedure :"+ str(end-start)+" seconds")
 
-    for rnd in rnds:
-        plt.plot(
-            S0 * COARSE_STRIKE_RANGE, rnd,alpha = 0.1
-        )
-    plt.plot(
-        S0 * COARSE_STRIKE_RANGE,
-        theoretical_rnds[0],
-        color="b",linewidth = 1,
-        label="theoretical rnd",
-    )
-    
-    plt.plot(
-        S0 * COARSE_STRIKE_RANGE,
-        mean_rnd,
-        color="r",linewidth = 1,
-        label="mean estimated rnd",
-    )
-    plt.plot(
-        S0 * COARSE_STRIKE_RANGE,
-        confidence_upper,
-        color="g",linewidth = 1,label = '95% confidence interval estimated rnd'
-    )
-    plt.plot(
-        S0 * COARSE_STRIKE_RANGE,
-        confidence_lower,
-        color="g",linewidth = 1
-    )
-
-    plt.grid(True)
-    plt.xlabel("S")
-    plt.legend()
-    plt.show()
-
+    args = {"model": model, "maturity": maturity, "upper_bound": upper_bound}
+    plots(rnds,args)
 
 if __name__ == "__main__":
     main()
