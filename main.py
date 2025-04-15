@@ -13,6 +13,8 @@ from kolmogorov_smirnov_test.array_to_pdf import  arrays_to_pdfs
 from kolmogorov_smirnov_test.sample import sample_from_pdfs
 from kolmogorov_smirnov_test.kolmogorov_test import perform_ks_test
 
+from mean_estimated_rnd.average_rnd import compute_mean_and_confidence_interval_rnds 
+
 import matplotlib.pyplot as plt
 import numpy as np
 import time 
@@ -40,7 +42,7 @@ def main():
     # other parameters
     T = 252 / 365  # time horizon for monter carlo simulations
     maturity = 63 / 365  # maturity of the calls
-    model = "black_scholes"  # model to use
+    model = "bakshi"  # model to use
 
     # True if you need to compute the vega (for the weights of the cubic
     # spline interpolation)
@@ -132,31 +134,40 @@ def main():
     # performing the tests :
     print("Performing the tests")
     p_values = perform_ks_test(samples_estimated_rnd,samples_true_rnd)
- 
+
+    mean_rnd, confidence_upper, confidence_lower = compute_mean_and_confidence_interval_rnds(rnds)
+
     end  = time.time()
     print("Total time for procedure :"+ str(end-start)+" seconds")
 
-
-    for estimated_call_price in estimated_call_prices:
-        plt.plot(
-            S0*COARSE_STRIKE_RANGE,
-            estimated_call_price
-        )
-    plt.grid(True)
-    plt.xlabel("Strike")
-    plt.ylabel("call prices")
-    plt.show()
-
     for rnd in rnds:
         plt.plot(
-            S0 * COARSE_STRIKE_RANGE, rnd
+            S0 * COARSE_STRIKE_RANGE, rnd,alpha = 0.1
         )
     plt.plot(
         S0 * COARSE_STRIKE_RANGE,
         theoretical_rnds[0],
-        color="b",linewidth = 3,
+        color="b",linewidth = 1,
         label="theoretical rnd",
     )
+    
+    plt.plot(
+        S0 * COARSE_STRIKE_RANGE,
+        mean_rnd,
+        color="r",linewidth = 1,
+        label="mean estimated rnd",
+    )
+    plt.plot(
+        S0 * COARSE_STRIKE_RANGE,
+        confidence_upper,
+        color="g",linewidth = 1,label = '95% confidence interval estimated rnd'
+    )
+    plt.plot(
+        S0 * COARSE_STRIKE_RANGE,
+        confidence_lower,
+        color="g",linewidth = 1
+    )
+
     plt.grid(True)
     plt.xlabel("S")
     plt.legend()
