@@ -27,7 +27,7 @@ def main():
     # other parameters
     T = 252 / 365  # time horizon for monter carlo simulations
     maturity = 63 / 365  # maturity of the calls
-    model = "black_scholes"  # model to use
+    model = "heston"  # model to use
 
     # True if you need to compute the vega (for the weights of the cubic
     # spline interpolation)
@@ -111,12 +111,12 @@ def main():
     print("mean p-values : "+str(mean_pvalues))
     print("Standard deviation of p-values :"+str(std_pvalues))
     print("Percentage of rejection of H0 : "+ str(percentage_rejected_H0))
-    
 
     end  = time.time()
     print("Total time for procedure :"+ str(end-start)+" seconds")
 
-    plots(rnds,theoretical_rnds)
+    args = {"model": model, "maturity": maturity, "upper_bound": upper_bound}
+    plots(rnds,args)
 
 if __name__ == "__main__":
     main()
