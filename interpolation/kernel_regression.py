@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from tqdm import tqdm
+from scipy.stats import iqr
 
 def interpolating_kernelreg(s_over_k_range: np.ndarray, implied_volatility: np.ndarray):
     """
@@ -128,11 +129,13 @@ def find_optimal_h_CV_fast(X: np.array, Y: np.array):
 
 def apply_NW_estimator(X: np.array, Y: np.array):
     """
-    Finds optimal value of h with faster cross-validation for the given data, "calibrates" the estimator and returns regression on X
+    Calculates h using Silverman's rule for the given data and "calibrates" the estimator
 
     Parameters:
     - X : explanatory variable
     - Y : target variable
     """
-    h_opt_CV = find_optimal_h_CV_fast(X, Y)
-    return NW_estimator(X, Y, h_opt_CV)
+    #h_opt_CV = find_optimal_h_CV_fast(X, Y)
+    h_silverman = 0.9*len(X)**(-1/5)*min(np.std(X), iqr(X)/1.349)
+    
+    return NW_estimator(X, Y, h_silverman)
