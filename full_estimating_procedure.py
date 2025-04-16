@@ -8,12 +8,12 @@ from computation_rnd.compute_call_price import (
 )
 from computation_rnd.derive_rnd import derive_rnd
 from computation_rnd.compute_theoretical_rnd import compute_theoretical_rnd
-from config import S_OVER_K_RANGE, NUMBER_OF_RND, NUM_SAMPLES,P_VALUE_TRESHOLD,MODEL_PARAMETERS, UPPER_BOUND,NUMBER_MC_STEPS
+from config import S_OVER_K_RANGE, NUMBER_OF_RND, NUM_SAMPLES,P_VALUE_TRESHOLD,MODEL_PARAMETERS, UPPER_BOUND,NUMBER_MC_STEPS,LAM
 from kolmogorov_smirnov_test.array_to_pdf import  arrays_to_pdfs
 from kolmogorov_smirnov_test.sample import sample_from_pdfs
 from kolmogorov_smirnov_test.kolmogorov_test import perform_ks_test
 from plots.plot import plots
-
+from plots.boxplots import boxplot_pvalues
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -76,7 +76,7 @@ def full_estimating_procedure(T : float, maturities :list[float], model : str, i
         print("fitting models")
         match interpolation_method:
             case 'cubic_splines':
-                estimators = interpolating_cs(S_OVER_K_RANGE, implied_vol_reversed, vega_reversed, lam=0.5 )
+                estimators = interpolating_cs(S_OVER_K_RANGE, implied_vol_reversed, vega_reversed, lam=LAM )
             case 'kernel_regression':
                 estimators = interpolating_kernelreg(S_OVER_K_RANGE,implied_vol_reversed)
             case 'rbf_network':
@@ -121,7 +121,8 @@ def full_estimating_procedure(T : float, maturities :list[float], model : str, i
         args = {"model": model, "maturity": maturity, "upper_bound": UPPER_BOUND}
         plots(rnds,args)
 
-    # boxplots_pvalues(np.array(list_p_values))
+    titles = ["T = "+f"{int(252*maturity)}" +" days" for maturity in maturities]
+    boxplot_pvalues(list_p_values,titles)
     end  = time.time()
     print("Total time for procedure :"+ str(end-start)+" seconds")
     return None
