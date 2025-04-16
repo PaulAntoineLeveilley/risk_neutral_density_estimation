@@ -23,6 +23,7 @@ from kolmogorov_smirnov_test.sample import sample_from_pdfs
 from kolmogorov_smirnov_test.kolmogorov_test import perform_ks_test
 from plots.plot import plots
 from plots.boxplots import boxplot_pvalues
+from make_result_directory import make_result_directory
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -47,7 +48,7 @@ def full_estimating_procedure(
     'cubic_splines', 'kernel_regression', 'rbf_network'.
     """
     start = time.time()
-
+    make_result_directory()
     match interpolation_method:
         case "cubic_splines":
             compute_vega = True
