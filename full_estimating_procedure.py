@@ -147,7 +147,7 @@ def full_estimating_procedure(
         print("Standard deviation of p-values :" + str(std_pvalues))
         print("Percentage of rejection of H0 : " + str(percentage_rejected_H0))
 
-        args = {"model": model, "maturity": maturity, "upper_bound": UPPER_BOUND}
+        args = {"model": model, "maturity": maturity, "upper_bound": UPPER_BOUND,"interpolation_method":interpolation_method}
         plots(rnds, args)
 
     titles = ["T = " + f"{int(252*maturity)}" + " days" for maturity in maturities]

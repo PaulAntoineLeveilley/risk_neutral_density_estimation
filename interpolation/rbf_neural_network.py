@@ -1,88 +1,110 @@
-from sklearn.cluster import KMeans
 import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
-def interpolating_rbf(
-    s_over_k_range: np.ndarray, implied_volatility: np.ndarray, num_centers: int
-):
+def interpolating_rbf(s_over_k_range: np.ndarray, implied_volatility: np.ndarray, num_centers: int, reg: float = 1e-1):
     """
-    Interpolates the implied volatility accros spot/strikes using cubic splines
+    Interpolates the implied volatility across spot/strikes using a custom RBF network with 
+    Ridge regularization and standardization of the input data.
+    
+    Parameters:
+      - s_over_k_range: 1D array of values (e.g., S/K ratios).
+      - implied_volatility: 2D array (n_simulations x n_points) of implied volatility values.
+      - num_centers: Number of RBF neurons.
+      - reg: Regularization parameter for ridge regression (default=1e-1).
+      
+    Returns:
+      - predictors: numpy array of predictor functions (one per simulation).
+    """
 
-    Parameters :
-    s_over_k_range : the range of spot/strikes accros which to interpolate
-    implied_volatility : the implied volatilities to interpolate
-    """
+    scaler = StandardScaler()
     X_train = np.array(s_over_k_range).reshape(-1, 1)
-    n, _ = np.shape(implied_volatility)
+    X_train_scaled = scaler.fit_transform(X_train)
+    
+    n, _ = implied_volatility.shape
     predictors = []
-    for i in tqdm(range(n)):
-        model = RBFNetwork(num_centers=num_centers)
+    
+    for i in tqdm(range(n), desc="Training RBF models"):
+        model = RBFNetwork(num_centers=num_centers, reg=reg)
         y_train = implied_volatility[i]
-        model.fit(X_train, y_train)
-        predictors.append(model.predict)
+        model.fit(X_train_scaled, y_train)
+        predictor = lambda X: model.predict(scaler.transform(np.array(X).reshape(-1, 1)))
+        predictors.append(predictor)
+        
     return np.array(predictors)
 
 
 class RBFNetwork:
-    def __init__(self, num_centers, sigma=None):
+    def __init__(self, num_centers, sigma=None, reg=1e-1):
         """
         Initialize the RBF network.
-
+        
         Parameters:
-        - num_centers: Number of RBF neurons
-        - sigma: Fixed width for all neurons (if None, the width will be estimated)
+          - num_centers: Number of RBF neurons.
+          - sigma: Fixed width for all neurons (if None, widths are estimated).
+          - reg: Regularization parameter for Ridge regression.
         """
         self.num_centers = num_centers
         self.sigma = sigma
+        self.reg = reg
         self.centers = None
         self.widths = None
         self.weights = None
         self.bias = None
 
     def _rbf(self, x, center, width):
-        return np.exp(-np.linalg.norm(x - center) ** 2 / (width**2))
+        return np.exp(- (x - center)**2 / (width**2))
 
     def _compute_activations(self, X):
-        n_samples = X.shape[0]
-        activations = np.zeros((n_samples, self.num_centers))
-        for i in range(n_samples):
-            for j in range(self.num_centers):
-                activations[i, j] = self._rbf(X[i], self.centers[j], self.widths[j])
+        """
+        Compute RBF activations vectorized.
+        X has shape (n_samples, 1) and centers has shape (num_centers, 1).
+        Returns an array of shape (n_samples, num_centers).
+        """
+        diff = X - self.centers.reshape(1, -1)
+        activations = np.exp(- (diff**2) / (self.widths.reshape(1, -1) ** 2))
         return activations
 
     def fit(self, X, y):
         """
-        Trains the RBF network on X (inputs) and y (targets).
+        Train the RBF network on X (inputs) and y (targets).
 
         Steps:
-        1. Determination of centers using KMeans.
-        2. Estimation of widths using the average of the distances between centers.
-        3. Calculation of RBF activations.
-        4. Linear regression (least squares) for the output weights and bias.
+          1. Determine centers using KMeans.
+          2. Estimate widths as the mean distance to other centers (or fixed sigma).
+          3. Compute RBF activations.
+          4. Solve the ridge regression problem: (A^T A + reg * R) w = A^T y.
         """
-
         kmeans = KMeans(n_clusters=self.num_centers, random_state=0).fit(X)
-        self.centers = kmeans.cluster_centers_
-
+        self.centers = kmeans.cluster_centers_.reshape(-1, 1)
+        
         self.widths = np.zeros(self.num_centers)
         for i in range(self.num_centers):
-            distances = np.linalg.norm(self.centers[i] - self.centers, axis=1)
+            distances = np.abs(self.centers[i] - self.centers.flatten())
             distances = distances[distances > 0]
-            if len(distances) > 0:
-                self.widths[i] = np.mean(distances)
-            else:
-                self.widths[i] = 1.0
+            self.widths[i] = np.mean(distances) if distances.size > 0 else 1.0
         if self.sigma is not None:
             self.widths = np.full(self.num_centers, self.sigma)
-
-        A = self._compute_activations(X)  # (n_samples, num_centers)
+        
+        A = self._compute_activations(X)  # shape: (n_samples, num_centers)
         A_bias = np.hstack([A, np.ones((A.shape[0], 1))])
-
-        w, residuals, rank, s = np.linalg.lstsq(A_bias, y, rcond=None)
+        y
+        n_features = A_bias.shape[1]
+        R = np.eye(n_features)
+        R[-1, -1] = 0.0 
+        lhs = A_bias.T @ A_bias + self.reg * R
+        rhs = A_bias.T @ y
+        w = np.linalg.solve(lhs, rhs)
+        
         self.weights = w[:-1]
         self.bias = w[-1]
 
     def predict(self, X):
+        """
+        Compute the network's output for inputs X.
+        """
         A = self._compute_activations(X)
         A_bias = np.hstack([A, np.ones((A.shape[0], 1))])
         return A_bias.dot(np.concatenate([self.weights, [self.bias]]))
+

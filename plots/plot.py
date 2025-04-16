@@ -18,6 +18,7 @@ def plots(rnds : np.array, args : dict):
     model = args["model"]
     maturity = args["maturity"]
     upper_bound = args["upper_bound"]
+    interpolation_method = args["interpolation_method"]
     theoretical_rnd = compute_theoretical_rnd(state_dict=state_dict,model=model,model_parameters=MODEL_PARAMETERS,maturity=maturity,upper_bound = upper_bound)[0]
     mean_rnd, confidence_upper, confidence_lower = compute_mean_and_confidence_interval_rnds(rnds)
     S0 = MODEL_PARAMETERS["S0"]
@@ -52,6 +53,6 @@ def plots(rnds : np.array, args : dict):
     plt.grid(True)
     plt.xlabel("S")
     plt.legend()
-    plt.savefig(f'results/rnd_plots/model_{model}_maturity_{str(int(maturity*252))}_days_rnd_plot.png')
+    plt.savefig(f'results/rnd_plots/model_{model}_{interpolation_method}_maturity_{str(int(maturity*252))}_days_rnd_plot.png')
     plt.close()
     return None
