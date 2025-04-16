@@ -52,5 +52,6 @@ def plots(rnds : np.array, args : dict):
     plt.grid(True)
     plt.xlabel("S")
     plt.legend()
-    plt.show()
+    plt.savefig(f'results/rnd_plots/model_{model}_maturity_{str(int(maturity*252))}_days_rnd_plot.png')
+    plt.close()
     return None
