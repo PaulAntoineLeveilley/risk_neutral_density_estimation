@@ -26,7 +26,7 @@ MAX_RND_TO_DISPLAY = 50
 
 UPPER_BOUND = 100
 
-Y_INF,Y_SUP = -0.0005,0.0012
+LAM = 0.4
 # model parameters
 S0 = 7616  # initial spot
 V0 = 0.01  # initial vol (for heston and bakshi)

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from config import COARSE_STRIKE_RANGE ,MODEL_PARAMETERS,MAX_RND_TO_DISPLAY,Y_INF,Y_SUP
+from config import COARSE_STRIKE_RANGE ,MODEL_PARAMETERS,MAX_RND_TO_DISPLAY
 from mean_estimated_rnd.average_rnd import compute_mean_and_confidence_interval_rnds 
 from computation_rnd.compute_theoretical_rnd import compute_theoretical_rnd
 
@@ -52,6 +52,5 @@ def plots(rnds : np.array, args : dict):
     plt.grid(True)
     plt.xlabel("S")
     plt.legend()
-    plt.ylim(Y_INF,Y_SUP)
     plt.show()
     return None
