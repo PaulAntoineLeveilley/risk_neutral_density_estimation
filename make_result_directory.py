@@ -12,4 +12,8 @@ def make_result_directory():
         os.makedirs('results/rnd_plots')
     if not os.path.isdir('results/kolmogorov_test'):
         os.makedirs('results/kolmogorov_test')
+    if not os.path.isdir('results/call_prices'):
+        os.makedirs('results/call_prices')
+    if not os.path.isdir('results/implied_vol'):
+        os.makedirs('results/implied_vol')
     return None

@@ -23,6 +23,7 @@ from kolmogorov_smirnov_test.sample import sample_from_pdfs
 from kolmogorov_smirnov_test.kolmogorov_test import perform_ks_test
 from plots.plot import plots
 from plots.boxplots import boxplot_pvalues
+from plots.plot_call_prices import plot_call_prices_and_estimation, plot_implied_vol_and_estimation
 from make_result_directory import make_result_directory
 
 import matplotlib.pyplot as plt
@@ -75,6 +76,7 @@ def full_estimating_procedure(
         spot_prices = data["spot_prices"]
         vols = data["vols"]
         call_prices = data["call_prices"]
+
         if compute_vega:
             vega = data["vega"]
 
@@ -108,10 +110,14 @@ def full_estimating_procedure(
         print("Compute predictions")
         predictions = estimators_to_prediction(estimators)
 
+        plot_implied_vol_and_estimation(implied_vol_reversed,predictions,{"model": model,"maturity" :maturity ,'interpolation_method': interpolation_method})
+
         print("Transforming predicted implied volatility into call prices")
         estimated_call_prices = implied_volatility_to_call_prices(
             predictions, spot_prices, maturity, r
         )
+
+        plot_call_prices_and_estimation(call_prices,estimated_call_prices,{"model": model,"maturity" :maturity ,'interpolation_method': interpolation_method})
 
         print("Computing risk neutral densities from call prices")
         rnds = derive_rnd(estimated_call_prices, spot_prices, maturity, r)
@@ -147,7 +153,7 @@ def full_estimating_procedure(
         print("Standard deviation of p-values :" + str(std_pvalues))
         print("Percentage of rejection of H0 : " + str(percentage_rejected_H0))
 
-        args = {"model": model, "maturity": maturity, "upper_bound": UPPER_BOUND,"interpolation_method":interpolation_method}
+        args = {"model": model, "maturity": maturity, "upper_bound": UPPER_BOUND, "interpolation_method": interpolation_method}
         plots(rnds, args)
 
     titles = ["T = " + f"{int(252*maturity)}" + " days" for maturity in maturities]
